@@ -1,0 +1,35 @@
+! Reaction stoichiometry
+! -----------------------
+
+&Aqueous
+  name          = 'TCE_decay'
+  stoichiometry = -1.0  'TCE(aq)'
+/
+&Aqueous
+  name          = 'sulfate_reduction'
+  type          = 'catabolic'
+  stoichiometry = -1.0 'Acetate' -1.0 'SO4--' 1.0 'HS-' 2.0 'HCO3-'
+  keq           = -5
+/
+
+
+! Reaction kinetics
+!------------------
+
+&AqueousKinetics
+  name          = 'TCE_decay'
+  label         = 'default'
+  type          = 'irreversible'
+  rate25C       = 4.0
+  dependence    = 'TCE(aq)' 1.0
+/
+&AqueousKinetics
+  name          = 'sulfate_reduction'
+  label         = 'default'
+  type          = 'Monod'
+  rate25C       = 0.1
+  monod_terms   = 'tot_SO4--' {{ half_saturation_constant["sulfate"] }} 'tot_Acetate' {{ half_saturation_constant["acetate"] }}
+  inhibition    = 'tot_Fe+++' {{ inhibition_constant["Fe3"] }}
+  direction     = -1
+/
+

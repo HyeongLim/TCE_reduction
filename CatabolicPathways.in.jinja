@@ -1,0 +1,21 @@
+&CatabolicPathway
+  name     = 'Fe(OH)3_DIRB'
+  reaction = -0.125 'Acetic_acid(aq)' 0.25 'HCO3-'  1.0 'Fe++'  -1.75 'H+'
+  keq      = 14.9147
+  biomass  = 'C5H7O2N(s)'
+  chi      = 1
+  bq        = -7.03
+  direction = -1
+  UseMetabolicLag = .false.
+/
+&CatabolicPathway
+  name     = 'Goethite_DIRB'
+  reaction = -0.125 'Acetate' 0.25 'HCO3-'  1.0 'Fe++'  -1.875 'H+'
+  keq      = {{ log10_equilibrium_constant["goethite_dirb"] }}
+  biomass  = 'C5H7O2N(s)'
+  chi      = 1
+  bq        = -7.03
+  direction = -1
+  UseMetabolicLag = .false.
+/
+

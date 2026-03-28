@@ -1,0 +1,225 @@
+TITLE
+Full geochemistry model realization {{ realization }}
+END
+
+RUNTIME
+time_units        days
+timestep_max      100.0
+timestep_init     1.0e-5
+time_tolerance    0.001
+!OvershootTolerance 1e-6
+dissolution_max   1e-4
+correction_max    2.0
+debye-huckel      true
+database_sweep    false
+speciate_only     false
+database          datacom.dbs
+kinetic_database  aqueous.dbs
+screen_output     10
+!!Turn gimrt to false to use OS3D
+gimrt             true
+END
+
+
+FLOW
+time_units      years
+distance_units  meters
+constant_flow   0.0
+END
+
+TRANSPORT
+distance_units       centimeters
+time_units           seconds
+fix_diffusion        1e-05
+constant_tortuosity  0.3
+dispersivity         0.0
+END
+
+SURFACE_COMPLEXATION
+>GFeOH on Goethite -no_edl
+>IllOH_str on Illite -no_edl
+>IllOH_w on Illite -no_edl
+END
+
+OUTPUT
+time_units years
+time_series_print
+time_series         totconhistory1.txt  1 1 1
+time_series         totconhistory2.txt  2 1 1
+time_series_interval 10
+spatial_profile    0.0001 0.001 0.01 0.1 0.5 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 &
+21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50
+END
+
+MINERALS
+Pyrite                     -rate {{ log10_dissolution_rate["pyrite"] }}
+FeS(am)                    -rate {{ log10_dissolution_rate["FeS"] }}
+Fe(OH)2                    -rate -10
+Siderite                   -rate {{ log10_dissolution_rate["siderite"] }}
+Calcite                    -rate -5
+Goethite                   -rate {{ log10_dissolution_rate["goethite"] }}
+Goethite_DIRB              -label iron_reduction -rate {{ log10_rate_constant["goethite_dirb"] }} -associate Goethite
+SOM                        -rate {{ log10_dissolution_rate["SOM"] }}
+Fe(OH)2_tce_reduction      -rate -10 -associate Fe(OH)2
+FeS(am)_tce_reduction      -rate {{ log10_tce_intrinsic_rate_constant["FeS"] }} -associate FeS(am)
+Siderite_tce_reduction     -rate {{ log10_tce_intrinsic_rate_constant["siderite"] }} -associate Siderite
+Pyrite_tce_reduction       -rate {{ log10_tce_intrinsic_rate_constant["pyrite"] }} -associate Pyrite
+S                          -rate {{ log10_rate_constant["abiotic_fe_reduction"] }} -label iron_reduction
+C5H7O2N(s)                 -rate 2 -biomass
+Illite                     -rate -55
+END
+
+GASES
+CO2(g)
+END
+
+PRIMARY_SPECIES
+H+
+HCO3-
+Mg++
+Ca++
+Na+
+Fe+++
+Cl-
+Fe++
+SO4--
+HS-
+Acetate
+TCE(aq)
+acetylene
+Tracer
+C5H7O2N
+END
+
+TEMPERATURE
+set_temperature 25
+END
+
+DISCRETIZATION
+distance_units meters
+xzones 25 0.002 50 0.005 50 0.01 30 0.04 20 0.1
+END
+
+BOUNDARY_CONDITIONS
+X_end     InitialClay    flux
+X_begin   Groundwater    Dirichlet
+Y_begin   InitialClay    flux
+Y_end     InitialClay    flux
+END
+
+INITIAL_CONDITIONS
+!Groundwater  1-1  fix
+InitialClay 1-175
+END
+
+Condition Groundwater
+temperature      25
+units            molar
+pH                                  7.5
+HCO3-                               Calcite
+Mg++                                2.4e-4
+Ca++                                2.9e-4
+Na+                                 3.8e-3
+Fe+++                               Goethite
+Fe++ {{ groundwater_concentration["Fe++"] }}
+SO4-- {{ groundwater_concentration["sulfate"] }}
+HS-                                 1e-8
+Cl-                                 1e-3
+Tracer                              1E-20
+TCE(aq)                             1E-20
+acetylene                           1E-20
+Acetate {{ groundwater_concentration["acetate"] }}
+C5H7O2N 1E-20
+!! Minerals                     !!Volume Fraction   !!Specific Surface Area (m2/g)
+FeS(am)                             1e-20 ssa {{ ssa["FeS"] }}
+Pyrite                              1e-20 ssa {{ ssa["pyrite"] }}
+Siderite                            1e-20 ssa {{ ssa["siderite"] }}
+Fe(OH)2                             1e-20 ssa 100
+Goethite                            0.018 ssa 50.0
+Calcite                             0.01 ssa 3.0
+SOM                                 1e-20 ssa 1
+S                                   1e-20 ssa 0.01
+C5H7O2N(s)                          1e-20
+Illite                              1e-15 ssa 55
+!!Site name     <site density mol/m**2>
+>GFeOH 1e-8
+>IllOH_str 1e-8
+>IllOH_w 1e-8
+END
+
+Condition InitialClay
+temperature      25
+units            molar
+pH                                  {{ initial_concentration["pH"] }}
+HCO3-                               Calcite
+Mg++                                2.4e-4
+Ca++                                2.9e-4
+Na+                                 3.8e-3
+Fe+++                               Goethite
+Fe++                                {{ initial_concentration["Fe++"] }}
+SO4--                               1E-10
+HS-                                 Pyrite
+Cl-                                 1e-3
+Tracer                              5e-3
+TCE(aq)                             5e-3
+acetylene                           1e-20
+Acetate                             5e-4
+C5H7O2N 1E-20
+!! Minerals                     !!Volume Fraction   !!Specific Surface Area (m2/g)
+FeS(am)                             {{ initial_mineral_fraction["FeS"] }} ssa {{ ssa["FeS"] }}
+Pyrite                              {{ initial_mineral_fraction["pyrite"] }} ssa {{ ssa["pyrite"] }}
+Siderite                            {{ initial_mineral_fraction["siderite"] }} ssa {{ ssa["siderite"] }}
+Fe(OH)2                             1e-20 ssa 100
+Goethite {{ initial_mineral_fraction["goethite"] }} ssa 50
+Calcite                             0.01 ssa 3.0
+SOM {{ initial_mineral_fraction["SOM"] }} ssa 1
+S                                   1e-20 ssa 0.01
+C5H7O2N(s)                          5e-5
+Illite {{ initial_mineral_fraction["illite"] }} ssa 55
+!!Site name     <site density mol/m**2>
+>GFeOH {{ sorption_site_density["goethite"] }}
+>IllOH_str {{ sorption_site_density["illite_str"] }}
+>IllOH_w {{ sorption_site_density["illite_w"] }}
+END
+
+SECONDARY_SPECIES
+OH-
+CO2(aq)
+CO3--
+Acetic_acid(aq)
+S--
+H2S(aq)
+CaOH+
+CaHCO3+
+CaCH3COO+
+CaCO3(aq)
+CaSO4(aq)
+FeOH+
+FeHCO3+
+FeCH3COO+
+FeCO3(aq)
+Fe(CO3)2--
+FeSO4(aq)
+FeCl+
+Fe(HS)2(aq)
+Fe(HS)3-
+MgOH+
+MgHCO3+
+MgCH3COO+
+MgCO3(aq)
+MgSO4(aq)
+NaHCO3(aq)
+NaCO3-
+NaCH3COO(aq)
+NaSO4-
+HSO4-
+END
+
+POROSITY
+!porosity_update false
+fix_porosity 0.3
+END
+
+AQUEOUS_KINETICS
+sulfate_reduction -rate {{ rate_constant["sulfate_reduction"] }}
+END
